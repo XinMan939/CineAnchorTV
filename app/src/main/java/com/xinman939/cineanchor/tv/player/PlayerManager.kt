@@ -47,6 +47,6 @@ class PlayerManager(private val context: Context) {
 
     fun release() {
         _player?.release()
-        player = null
+        _player = null
     }
 }

@@ -153,7 +153,7 @@ fun DetailScreen(
     }
 }
 
-private fun withFrameNanos(block: () -> Unit) {
-    // androidx.compose.runtime.withFrameNanos 的包装, 保持 import 简洁
+private suspend fun withFrameNanos(block: () -> Unit) {
+    // androidx.compose.runtime.withFrameNanos 的包装: 必须标 suspend (LaunchedEffect 体内可调)
     androidx.compose.runtime.withFrameNanos { block() }
 }

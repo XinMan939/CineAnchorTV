@@ -42,6 +42,8 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
+    // 设置对话框的 TextField 用 compose.material3 (TV 主组件仍是 androidx.tv.material3)
+    implementation(libs.androidx.compose.material3)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     // TV 专用: 必须是 androidx.tv.material3, 不是 androidx.compose.material3!
