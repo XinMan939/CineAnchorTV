@@ -12,19 +12,26 @@ object ApiClient {
     @Volatile
     private var apiInstance: CineAnchorApi? = null
 
+    /** 当前 baseUrl (图片代理等用途), init/rebuild 时更新 */
+    @Volatile
+    var baseUrl: String = ""
+        private set
+
     /** 必须在协程里先调用一次 (读 DataStore 是挂起操作) */
     suspend fun init(settings: Settings): CineAnchorApi {
         apiInstance?.let { return it }
         val baseUrl = settings.serverBaseUrl.first()
         synchronized(this) {
             apiInstance?.let { return it }
-            return build(baseUrl).also { apiInstance = it }
+            return rebuild(baseUrl).also { apiInstance = it }
         }
     }
 
     /** 设置页改完地址后调用, 重建 Retrofit */
-    fun rebuild(baseUrl: String): CineAnchorApi =
-        build(baseUrl).also { apiInstance = it }
+    fun rebuild(baseUrl: String): CineAnchorApi {
+        this.baseUrl = if (baseUrl.endsWith("/")) baseUrl else "$baseUrl/"
+        return build(baseUrl).also { apiInstance = it }
+    }
 
     val api: CineAnchorApi
         get() = apiInstance ?: error("ApiClient.init() not called — 在 Application/首个 LaunchedEffect 里调用")

@@ -28,6 +28,7 @@ import androidx.tv.material3.Text
 import coil.compose.AsyncImage
 import com.xinman939.cineanchor.tv.data.ApiClient
 import com.xinman939.cineanchor.tv.data.MediaItem
+import com.xinman939.cineanchor.tv.data.viaProxy
 
 /**
  * 首页海报墙: 最新上线 (index.db 内容库) + 热门榜单 (TMDB trending)。
@@ -82,7 +83,7 @@ private fun PosterCard(item: MediaItem, onClick: () -> Unit) {
         ) {
             Box(Modifier.fillMaxSize().background(Color(0xFF161B22))) {
                 AsyncImage(
-                    model = item.poster,
+                    model = item.poster.viaProxy(ApiClient.baseUrl),
                     contentDescription = item.title,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),

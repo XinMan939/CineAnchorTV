@@ -39,6 +39,7 @@ import com.xinman939.cineanchor.tv.ui.DetailScreen
 import com.xinman939.cineanchor.tv.ui.HomeScreen
 import com.xinman939.cineanchor.tv.ui.PlayerScreen
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.launch
 
 /**
@@ -59,10 +60,21 @@ class MainActivity : ComponentActivity() {
             var showServerDialog by remember { mutableStateOf(false) }
 
             LaunchedEffect(Unit) {
-                val url = settings.serverBaseUrl.first()
-                serverUrl = url
-                ApiClient.init(settings)
-                apiReady = true
+                try {
+                    android.util.Log.i("CineAnchor", "init: reading settings...")
+                    val url = withTimeoutOrNull(3000L) { settings.serverBaseUrl.first() }
+                        ?: "http://192.168.0.18:8787/"   // DataStore 卡死兜底
+                    android.util.Log.i("CineAnchor", "init: url=$url")
+                    serverUrl = url
+                    ApiClient.rebuild(url)
+                    apiReady = true
+                    android.util.Log.i("CineAnchor", "init: apiReady")
+                } catch (e: Exception) {
+                    android.util.Log.e("CineAnchor", "init failed, fallback", e)
+                    serverUrl = "http://192.168.0.18:8787/"
+                    ApiClient.rebuild(serverUrl)
+                    apiReady = true
+                }
             }
 
             Box(Modifier.fillMaxSize().background(Color(0xFF0D1117))) {

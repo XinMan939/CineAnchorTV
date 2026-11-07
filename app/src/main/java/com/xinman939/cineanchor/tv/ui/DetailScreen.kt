@@ -36,6 +36,7 @@ import com.xinman939.cineanchor.tv.data.Line
 import com.xinman939.cineanchor.tv.data.MediaDetail
 import com.xinman939.cineanchor.tv.data.SourcesResponse
 import com.xinman939.cineanchor.tv.data.qualityLabel
+import com.xinman939.cineanchor.tv.data.viaProxy
 
 /**
  * 详情页: 左侧海报+简介, 右侧线路/分集格子。
@@ -77,7 +78,7 @@ fun DetailScreen(
                 // 左栏: 海报 + 信息 + 简介
                 Column(Modifier.width(340.dp).fillMaxHeight()) {
                     AsyncImage(
-                        model = d.media.poster_full,
+                        model = d.media.poster_full.viaProxy(ApiClient.baseUrl),
                         contentDescription = d.media.title,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxWidth().weight(1f),
@@ -123,7 +124,10 @@ fun DetailScreen(
                 ) {
                     itemsIndexed(d.lines) { idx, line ->
                         Card(
-                            onClick = { onPlay(d.media, line) },
+                            onClick = {
+                                android.util.Log.i("CineAnchor", "line clicked: idx=$idx ${line.provider} ${line.episode}")
+                                onPlay(d.media, line)
+                            },
                             modifier = if (idx == 0) Modifier.focusRequester(firstFocus) else Modifier,
                         ) {
                             Column(Modifier.padding(12.dp)) {
@@ -139,11 +143,21 @@ fun DetailScreen(
                                 )
                             }
                         }
-                        // 首帧布局完成后请求焦点 (必须 withFrameNanos 等一帧, 否则无效)
+                        // 首帧布局完成后请求焦点 (MuMu/Houdini 上 withFrameNanos 可能挂死, 加超时兜底)
                         if (idx == 0) {
                             LaunchedEffect(d) {
-                                withFrameNanos { }
-                                firstFocus.requestFocus()
+                                try {
+                                    kotlinx.coroutines.withTimeoutOrNull(2000L) {
+                                        withFrameNanos { }
+                                    }
+                                } catch (e: Exception) {
+                                    android.util.Log.w("CineAnchor", "focus frame wait failed", e)
+                                }
+                                try {
+                                    firstFocus.requestFocus()
+                                } catch (e: Exception) {
+                                    android.util.Log.w("CineAnchor", "focus request failed", e)
+                                }
                             }
                         }
                     }

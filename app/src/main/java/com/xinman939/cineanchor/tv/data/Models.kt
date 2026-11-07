@@ -61,3 +61,17 @@ val Line.qualityLabel: String
         quality <= -10 -> "枪版"
         else -> ""
     }
+
+/**
+ * TMDB 图片 URL → 后端代理 URL。
+ * 模拟器/TV 直连 image.tmdb.org 可能不通 (无代理环境), 统一改走后端 /api/v1/img 代理,
+ * 后端再拉 TMDB (后端所在 PC 有网络环境保障)。失败时返回 null 由调用方回退原 URL。
+ */
+fun String?.viaProxy(baseUrl: String): String? {
+    if (this == null) return null
+    if (!startsWith("https://image.tmdb.org")) return this   // 非 TMDB 图不动
+    val idx = indexOf("/t/p/")
+    if (idx < 0) return this
+    val path = substring(idx)                                // /t/p/w500/xxx.jpg (只含安全字符)
+    return baseUrl.trimEnd('/') + "/api/v1/img?path=" + path
+}
